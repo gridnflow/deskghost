@@ -12,6 +12,9 @@ module.exports = {
   // 앱 전환으로 인한 즉시 호출의 디바운스 — 창을 휙휙 넘길 때 연타 방지
   appChangeDebounceMs: 20_000,
 
+  // 유령 등장 후 쿨다운 — 이 시간 동안은 판정 자체를 쉼 (잔소리 스팸 + 비용 방지)
+  cooldownAfterAppearMs: 4 * 60 * 1000,
+
   // 스크린샷 다운스케일 가로폭(px) — 이미지 토큰 절약
   screenshotWidth: 1280,
 
@@ -21,6 +24,10 @@ module.exports = {
   // 유령 창 크기
   windowWidth: 340,
   windowHeight: 300,
+
+  // 유령 목소리 — macOS `say` 음성 이름. 끄려면 null.
+  // 한국어 후보: 'Yuna'(기본), 'Grandma'(할머니 잔소리), 'Eddy', 'Flo', 'Reed' 등
+  voice: 'Yuna',
 
   // "코딩 중"으로 인정하는 앱들 (기지개 이스터에그용)
   devApps: [

@@ -1,6 +1,26 @@
 const { app, BrowserWindow, Tray, Menu, nativeImage, screen } = require('electron');
+const { execFile } = require('child_process');
+const fs = require('fs');
 const path = require('path');
 const config = require('./src/config');
+
+// .env 로더 (의존성 없음) — Finder/launchd 경유 실행 시 셸 환경변수가 없으므로
+try {
+  for (const line of fs.readFileSync(path.join(__dirname, '.env'), 'utf8').split('\n')) {
+    const m = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*?)\s*$/);
+    if (m && !process.env[m[1]]) process.env[m[1]] = m[2];
+  }
+} catch {
+  // .env 없으면 셸 환경변수 그대로 사용
+}
+
+// 로그를 파일에도 남김 — GUI로 실행하면 터미널이 없으므로
+const LOG_PATH = path.join(__dirname, 'deskghost.log');
+function log(line) {
+  const msg = `[${new Date().toISOString()}] ${line}`;
+  console.log(msg);
+  try { fs.appendFileSync(LOG_PATH, msg + '\n'); } catch {}
+}
 const { getActiveApp, captureScreen } = require('./src/capture');
 const { judge } = require('./src/brain');
 
@@ -15,6 +35,7 @@ let lastApp = null;
 let lastCallAt = 0;
 let lastAppChangeCallAt = 0;
 let bubbleUntil = 0; // 말풍선이 떠 있는 동안 스크린샷 금지(자기 자신을 찍지 않게)
+let cooldownUntil = 0; // 등장 후 쿨다운 — 잔소리 스팸 방지
 let history = [];
 
 // 연속 코딩(기지개 이스터에그) 상태
@@ -70,10 +91,20 @@ function createTray() {
   rebuild();
 }
 
+// 유령이 말도 함 — macOS 내장 TTS (비용 0)
+function speak(message) {
+  if (!config.voice || !message) return;
+  execFile('say', ['-v', config.voice, message], (err) => {
+    if (err) log(`TTS 실패: ${err.message}`);
+  });
+}
+
 function showGhost(payload) {
   if (!win) return;
   bubbleUntil = Date.now() + config.bubbleMs;
+  cooldownUntil = Date.now() + config.cooldownAfterAppearMs;
   win.webContents.send('ghost', payload);
+  speak(payload.message);
 }
 
 function pushHistory(app_, message) {
@@ -110,12 +141,13 @@ async function tick(force = false) {
   if (paused && !force) return;
   const now = Date.now();
   if (now < bubbleUntil) return; // 말풍선 떠 있는 동안은 쉬기
+  if (!force && now < cooldownUntil) return; // 등장 직후 쿨다운 — 판정도 쉼 (비용 절약)
 
   let activeApp;
   try {
     activeApp = await getActiveApp();
   } catch (err) {
-    console.warn('[deskghost] 활성 앱 감지 실패(자동화 권한 확인):', err.message);
+    log(`활성 앱 감지 실패(자동화 권한 확인): ${err.message}`);
     return;
   }
 
@@ -136,7 +168,7 @@ async function tick(force = false) {
   try {
     shot = await captureScreen(config.screenshotWidth);
   } catch (err) {
-    console.warn('[deskghost] 스크린샷 실패(화면 기록 권한 확인):', err.message);
+    log(`스크린샷 실패(화면 기록 권한 확인): ${err.message}`);
     return;
   }
 
@@ -147,7 +179,7 @@ async function tick(force = false) {
   try {
     verdict = await judge({ imageBase64: shot.base64, activeApp, history });
   } catch (err) {
-    console.warn('[deskghost] OpenAI 호출 실패:', err.message);
+    log(`OpenAI 호출 실패: ${err.message}`);
     if (/api.?key|auth/i.test(err.message)) {
       showGhost({
         should_appear: true,
@@ -161,8 +193,10 @@ async function tick(force = false) {
   if (!verdict) return;
   pushHistory(activeApp, verdict.should_appear ? verdict.message : '');
   if (verdict.should_appear && verdict.message) {
-    console.log(`[deskghost] 👻 (${verdict.mood}) ${verdict.message}`);
+    log(`👻 (${verdict.mood}) ${verdict.message}`);
     showGhost(verdict);
+  } else {
+    log(`... 침묵 판정 (활성 앱: ${activeApp})`);
   }
 }
 
