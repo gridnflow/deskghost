@@ -1,0 +1,16 @@
+{
+  "name": "deskghost",
+  "version": "0.1.0",
+  "description": "내 맥북 화면을 훔쳐보는 유령 AI",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron ."
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.110.0"
+  },
+  "devDependencies": {
+    "electron": "^43.0.0"
+  }
+}

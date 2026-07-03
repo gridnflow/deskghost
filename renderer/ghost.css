@@ -1,0 +1,134 @@
+/* 창 전체가 투명 오버레이 — 배경은 절대 칠하지 않음 */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html, body {
+  width: 100%;
+  height: 100%;
+  background: transparent;
+  overflow: hidden;
+  font-family: 'Apple SD Gothic Neo', 'Pretendard', sans-serif;
+  user-select: none;
+}
+
+#stage {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  padding-bottom: 12px;
+}
+
+/* ── 말풍선 ── */
+#bubble {
+  max-width: 300px;
+  margin-bottom: 14px;
+  padding: 12px 16px;
+  background: rgba(255, 255, 255, 0.96);
+  border-radius: 16px;
+  border-bottom-right-radius: 4px;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.25);
+  font-size: 14px;
+  line-height: 1.5;
+  color: #222;
+  word-break: keep-all;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+#bubble.hidden { opacity: 0; transform: translateY(8px) scale(0.9); }
+
+/* ── 유령 ── */
+#ghost {
+  position: relative;
+  filter: drop-shadow(0 6px 14px rgba(120, 140, 255, 0.35));
+  transition: opacity 0.5s ease, transform 0.5s ease;
+  animation: float 3s ease-in-out infinite;
+}
+#ghost.hidden {
+  opacity: 0;
+  transform: translateY(30px) scale(0.7);
+  animation: none;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+#body {
+  fill: #f5f6ff;
+  stroke: #d8daf0;
+  stroke-width: 2;
+}
+
+#shadow {
+  width: 70px;
+  height: 10px;
+  margin: 2px auto 0;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.18);
+  animation: shadowPulse 3s ease-in-out infinite;
+}
+@keyframes shadowPulse {
+  0%, 100% { transform: scaleX(1); opacity: 0.9; }
+  50% { transform: scaleX(0.8); opacity: 0.6; }
+}
+
+/* 이목구비 기본값 */
+.brow { stroke: #444; stroke-width: 4; stroke-linecap: round; display: none; }
+#eyes-dot circle { fill: #333; }
+#eyes-happy path, #eyes-closed path {
+  fill: none; stroke: #333; stroke-width: 4; stroke-linecap: round; display: none;
+}
+.blush { fill: #ffb7c5; opacity: 0; transition: opacity 0.3s; }
+#mouth-o { fill: #555; display: none; }
+#mouth-flat { stroke: #555; stroke-width: 3; stroke-linecap: round; display: none; }
+#sweat { fill: #8fc9ff; display: none; }
+
+/* ── 기분(mood)별 표정 ── */
+
+/* nag: 잔소리 — 치켜뜬 눈썹 + 벌린 입 + 발그레 */
+#ghost.nag .brow { display: block; }
+#ghost.nag #eyes-dot circle { fill: #222; }
+#ghost.nag #mouth-o { display: block; }
+#ghost.nag .blush { opacity: 0.9; }
+#ghost.nag { animation: float 3s ease-in-out infinite, shake 0.5s ease-in-out 2; }
+@keyframes shake {
+  0%, 100% { margin-left: 0; }
+  25% { margin-left: -6px; }
+  75% { margin-left: 6px; }
+}
+
+/* sigh: 한숨 — 감은 눈 + 一자 입 + 땀방울 */
+#ghost.sigh #eyes-dot { display: none; }
+#ghost.sigh #eyes-closed path { display: block; }
+#ghost.sigh #mouth-flat { display: block; }
+#ghost.sigh #sweat { display: block; animation: drip 1.6s ease-in infinite; }
+@keyframes drip {
+  0% { transform: translateY(0); opacity: 1; }
+  70% { transform: translateY(10px); opacity: 1; }
+  100% { transform: translateY(16px); opacity: 0; }
+}
+
+/* cheer: 응원 — 웃는 눈 + 발그레 + 폴짝 */
+#ghost.cheer #eyes-dot { display: none; }
+#ghost.cheer #eyes-happy path { display: block; }
+#ghost.cheer .blush { opacity: 0.9; }
+#ghost.cheer { animation: float 3s ease-in-out infinite, hop 0.6s ease-out 2; }
+@keyframes hop {
+  0%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-18px); }
+}
+
+/* stretch: 기지개 이스터에그 — 몸이 쭉 늘어남 */
+#ghost.stretch #eyes-dot { display: none; }
+#ghost.stretch #eyes-closed path { display: block; }
+#ghost.stretch #mouth-o { display: block; }
+#ghost.stretch svg { animation: stretchUp 2.4s ease-in-out infinite; transform-origin: bottom center; }
+@keyframes stretchUp {
+  0%, 100% { transform: scaleY(1) scaleX(1); }
+  45%, 60% { transform: scaleY(1.25) scaleX(0.88); }
+}
+
+/* neutral: 기본 둥실 */
