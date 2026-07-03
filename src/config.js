@@ -3,8 +3,8 @@ module.exports = {
   // 유령의 언어 — 'ko' | 'en'. 트레이 메뉴에서 런타임 전환도 가능 (이 값은 기본값)
   language: 'ko',
 
-  // OpenAI 모델 — 비용을 아끼려면 'gpt-5-mini'로
-  model: 'gpt-5-mini',
+  // OpenAI 모델 — 가장 저렴한 비전 지원 모델 (더 똑똑하게: 'gpt-5-mini' / 'gpt-5.1')
+  model: 'gpt-5-nano',
 
   // 가벼운 체크 주기 (활성 앱 이름만 확인, API 호출 없음)
   tickMs: 15_000,

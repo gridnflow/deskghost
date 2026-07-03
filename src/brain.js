@@ -72,7 +72,9 @@ async function judge({ imageBase64, activeApp, history }) {
 
   const response = await getClient().chat.completions.create({
     model: config.model,
-    max_completion_tokens: 1024,
+    // gpt-5 계열은 추론 토큰이 이 한도를 함께 소모 — 넉넉히 잡고 추론은 낮게
+    max_completion_tokens: 4096,
+    reasoning_effort: 'low',
     messages: [
       { role: 'system', content: buildSystemPrompt() },
       {
