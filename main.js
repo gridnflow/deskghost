@@ -201,7 +201,10 @@ async function tick(force = false) {
 }
 
 app.whenReady().then(() => {
-  if (process.platform === 'darwin') app.dock?.hide(); // Dock에 안 보이게
+  // Dock에 유령 아이콘 표시 (개발 실행 시에도 기본 Electron 아이콘 대신)
+  if (process.platform === 'darwin') {
+    app.dock?.setIcon(nativeImage.createFromPath(path.join(__dirname, 'assets', 'icon.png')));
+  }
   createWindow();
   createTray();
 

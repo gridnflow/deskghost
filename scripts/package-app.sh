@@ -36,8 +36,6 @@ mv "$APP/Contents/MacOS/Electron" "$APP/Contents/MacOS/DeskGhost"
   || /usr/libexec/PlistBuddy -c "Set :CFBundleDisplayName DeskGhost" "$PLIST"
 /usr/libexec/PlistBuddy -c "Set :CFBundleIdentifier com.gridnflow.deskghost" "$PLIST"
 /usr/libexec/PlistBuddy -c "Set :CFBundleIconFile icon.icns" "$PLIST"
-/usr/libexec/PlistBuddy -c "Add :LSUIElement bool true" "$PLIST" 2>/dev/null \
-  || /usr/libexec/PlistBuddy -c "Set :LSUIElement true" "$PLIST"
 
 # 수정된 번들 ad-hoc 재서명 (미서명 바이너리는 실행 불가)
 codesign --force --deep --sign - "$APP" >/dev/null 2>&1
