@@ -1,7 +1,10 @@
 // DeskGhost 설정 — 필요에 따라 자유롭게 조절하세요.
 module.exports = {
+  // 유령의 언어 — 'ko' | 'en'. 트레이 메뉴에서 런타임 전환도 가능 (이 값은 기본값)
+  language: 'ko',
+
   // OpenAI 모델 — 비용을 아끼려면 'gpt-5-mini'로
-  model: 'gpt-5.1',
+  model: 'gpt-5-mini',
 
   // 가벼운 체크 주기 (활성 앱 이름만 확인, API 호출 없음)
   tickMs: 15_000,
@@ -25,9 +28,10 @@ module.exports = {
   windowWidth: 340,
   windowHeight: 300,
 
-  // 유령 목소리 — macOS `say` 음성 이름. 끄려면 null.
-  // 한국어 후보: 'Yuna'(기본), 'Grandma'(할머니 잔소리), 'Eddy', 'Flo', 'Reed' 등
-  voice: 'Yuna',
+  // 유령 목소리 — null이면 언어에 맞는 기본 음성(ko: Yuna, en: Samantha).
+  // 특정 음성으로 고정하려면 macOS `say` 음성 이름 지정. 끄려면 false.
+  // 한국어 후보: 'Yuna', 'Grandma'(할머니 잔소리), 'Eddy', 'Flo', 'Reed' 등
+  voice: null,
 
   // "코딩 중"으로 인정하는 앱들 (기지개 이스터에그용)
   devApps: [

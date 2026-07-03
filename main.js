@@ -23,6 +23,7 @@ function log(line) {
 }
 const { getActiveApp, captureScreen } = require('./src/capture');
 const { judge } = require('./src/brain');
+const { t, getLanguage, setLanguage } = require('./src/i18n');
 
 const TEST_RUN = process.argv.includes('--test-run');
 
@@ -75,16 +76,33 @@ function createTray() {
     tray.setContextMenu(
       Menu.buildFromTemplate([
         {
-          label: paused ? '다시 훔쳐보기' : '잠깐 눈 감기 (일시정지)',
+          label: paused ? t('trayResume') : t('trayPause'),
           click: () => {
             paused = !paused;
             tray.setTitle(paused ? '💤' : ''); // 아이콘 옆에 잠듦 표시만
             rebuild();
           },
         },
-        { label: '지금 바로 판정하기', click: () => tick(true) },
+        { label: t('trayJudge'), click: () => tick(true) },
+        {
+          label: t('trayLanguage'),
+          submenu: [
+            {
+              label: '한국어',
+              type: 'radio',
+              checked: getLanguage() === 'ko',
+              click: () => { setLanguage('ko'); rebuild(); },
+            },
+            {
+              label: 'English',
+              type: 'radio',
+              checked: getLanguage() === 'en',
+              click: () => { setLanguage('en'); rebuild(); },
+            },
+          ],
+        },
         { type: 'separator' },
-        { label: '성불하기 (종료)', click: () => app.quit() },
+        { label: t('trayQuit'), click: () => app.quit() },
       ]),
     );
   };
@@ -93,8 +111,9 @@ function createTray() {
 
 // 유령이 말도 함 — macOS 내장 TTS (비용 0)
 function speak(message) {
-  if (!config.voice || !message) return;
-  execFile('say', ['-v', config.voice, message], (err) => {
+  if (config.voice === false || !message) return;
+  const voice = config.voice || t('voice'); // null이면 언어별 기본 음성
+  execFile('say', ['-v', voice, message], (err) => {
     if (err) log(`TTS 실패: ${err.message}`);
   });
 }
@@ -129,7 +148,7 @@ function trackCodingStreak(activeApp, now) {
       showGhost({
         should_appear: true,
         mood: 'stretch',
-        message: `${hours}시간째 코딩 중... 유령도 삭신이 쑤셔요. 기지개 한번 켜시죠.`,
+        message: t('stretch', hours),
       });
       return true; // 이번 틱은 이걸로 충분
     }
@@ -184,7 +203,7 @@ async function tick(force = false) {
       showGhost({
         should_appear: true,
         mood: 'sigh',
-        message: 'OPENAI_API_KEY가 없네요... 유령도 영혼의 양식이 필요해요.',
+        message: t('noApiKey'),
       });
     }
     return;
@@ -211,7 +230,7 @@ app.whenReady().then(() => {
   if (TEST_RUN) {
     // 검증용: 창만 띄워보고 8초 뒤 종료 (감시 루프/권한 요청 없음)
     win.webContents.once('did-finish-load', () => {
-      showGhost({ should_appear: true, mood: 'cheer', message: '테스트 부팅 성공! 👻' });
+      showGhost({ should_appear: true, mood: 'cheer', message: t('testBoot') });
     });
     setTimeout(() => app.quit(), 8000);
     return;
