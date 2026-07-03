@@ -68,8 +68,8 @@ function createWindow() {
 }
 
 function createTray() {
-  tray = new Tray(nativeImage.createEmpty());
-  tray.setTitle('👻');
+  // assets/tray.png(18px) + tray@2x.png(36px) — 레티나 자동 선택
+  tray = new Tray(nativeImage.createFromPath(path.join(__dirname, 'assets', 'tray.png')));
   tray.setToolTip('DeskGhost');
   const rebuild = () => {
     tray.setContextMenu(
@@ -78,7 +78,7 @@ function createTray() {
           label: paused ? '다시 훔쳐보기' : '잠깐 눈 감기 (일시정지)',
           click: () => {
             paused = !paused;
-            tray.setTitle(paused ? '💤' : '👻');
+            tray.setTitle(paused ? '💤' : ''); // 아이콘 옆에 잠듦 표시만
             rebuild();
           },
         },
