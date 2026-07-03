@@ -124,7 +124,7 @@ async function tick(force = false) {
 
   if (trackCodingStreak(activeApp, now)) return;
 
-  // ── 비용 게이트: 언제 Claude를 부를까 ──
+  // ── 비용 게이트: 언제 OpenAI를 부를까 ──
   // 1) 앱이 바뀌었고 디바운스가 지났으면 즉시
   // 2) 그 외엔 최소 호출 간격이 지났을 때만
   const appChangeTrigger =
@@ -147,12 +147,12 @@ async function tick(force = false) {
   try {
     verdict = await judge({ imageBase64: shot.base64, activeApp, history });
   } catch (err) {
-    console.warn('[deskghost] Claude 호출 실패:', err.message);
-    if (/api_key|auth/i.test(err.message)) {
+    console.warn('[deskghost] OpenAI 호출 실패:', err.message);
+    if (/api.?key|auth/i.test(err.message)) {
       showGhost({
         should_appear: true,
         mood: 'sigh',
-        message: 'ANTHROPIC_API_KEY가 없네요... 유령도 영혼의 양식이 필요해요.',
+        message: 'OPENAI_API_KEY가 없네요... 유령도 영혼의 양식이 필요해요.',
       });
     }
     return;

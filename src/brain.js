@@ -1,5 +1,5 @@
-// Claude에게 스크린샷을 보여주고 "참견할지 말지"를 판정받는 모듈.
-const Anthropic = require('@anthropic-ai/sdk');
+// OpenAI에게 스크린샷을 보여주고 "참견할지 말지"를 판정받는 모듈.
+const OpenAI = require('openai');
 const config = require('./config');
 
 const SYSTEM_PROMPT = `당신은 "DeskGhost"(데스크고스트) — 사용자의 맥북 화면 뒤에 숨어 사는 장난기 많은 유령입니다.
@@ -50,7 +50,7 @@ const OUTPUT_SCHEMA = {
 
 let client = null;
 function getClient() {
-  if (!client) client = new Anthropic(); // ANTHROPIC_API_KEY 등 환경에서 자동 해석
+  if (!client) client = new OpenAI(); // OPENAI_API_KEY 환경변수에서 자동 해석
   return client;
 }
 
@@ -66,21 +66,17 @@ async function judge({ imageBase64, activeApp, history }) {
     ? history.map((h) => `- [${h.time}] ${h.app}: ${h.message || '(침묵)'}`).join('\n')
     : '(없음)';
 
-  const response = await getClient().messages.create({
+  const response = await getClient().chat.completions.create({
     model: config.model,
-    max_tokens: 1024, // 짧은 JSON 한 개가 목적 — 의도적으로 낮게 설정
-    // 페르소나는 고정 프롬프트 — 프롬프트가 길어지면 캐시 히트 대상이 됨
-    system: [
-      { type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } },
-    ],
-    output_config: { format: { type: 'json_schema', schema: OUTPUT_SCHEMA } },
+    max_completion_tokens: 1024,
     messages: [
+      { role: 'system', content: SYSTEM_PROMPT },
       {
         role: 'user',
         content: [
           {
-            type: 'image',
-            source: { type: 'base64', media_type: 'image/jpeg', data: imageBase64 },
+            type: 'image_url',
+            image_url: { url: `data:image/jpeg;base64,${imageBase64}`, detail: 'auto' },
           },
           {
             type: 'text',
@@ -89,13 +85,16 @@ async function judge({ imageBase64, activeApp, history }) {
         ],
       },
     ],
+    response_format: {
+      type: 'json_schema',
+      json_schema: { name: 'ghost_verdict', strict: true, schema: OUTPUT_SCHEMA },
+    },
   });
 
-  if (response.stop_reason === 'refusal') return null;
-
-  const textBlock = response.content.find((b) => b.type === 'text');
-  if (!textBlock) return null;
-  return JSON.parse(textBlock.text);
+  const choice = response.choices[0];
+  if (!choice || choice.message.refusal) return null;
+  if (!choice.message.content) return null;
+  return JSON.parse(choice.message.content);
 }
 
 module.exports = { judge };

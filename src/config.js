@@ -1,12 +1,12 @@
 // DeskGhost 설정 — 필요에 따라 자유롭게 조절하세요.
 module.exports = {
-  // Claude 모델
-  model: 'claude-opus-4-8',
+  // OpenAI 모델 — 비용을 아끼려면 'gpt-5-mini'로
+  model: 'gpt-5.1',
 
   // 가벼운 체크 주기 (활성 앱 이름만 확인, API 호출 없음)
   tickMs: 15_000,
 
-  // Claude 호출 최소 간격 — 이보다 자주 부르지 않음 (비용 게이트)
+  // OpenAI 호출 최소 간격 — 이보다 자주 부르지 않음 (비용 게이트)
   minCallIntervalMs: 60_000,
 
   // 앱 전환으로 인한 즉시 호출의 디바운스 — 창을 휙휙 넘길 때 연타 방지
@@ -34,6 +34,6 @@ module.exports = {
   // 코딩 앱에서 벗어난 지 이만큼 지나면 연속 기록 리셋
   streakBreakMs: 5 * 60 * 1000,
 
-  // Claude에게 함께 보내는 직전 관찰 기록 개수 (잔소리 반복 방지)
+  // OpenAI에게 함께 보내는 직전 관찰 기록 개수 (잔소리 반복 방지)
   historySize: 5,
 };
